@@ -1,0 +1,20 @@
+{
+  "private": true,
+  "dependencies": {
+    "browserify": "^16.5.0",
+    "terser": "^4.4.0"
+  },
+  "devDependencies": {
+    "catw": "^1.0.1",
+    "tap": "^14.9.2",
+    "watchify": "^3.11.1"
+  },
+  "scripts": {
+    "build-js": "browserify js/app.js | terser -cm > ./public/js/index.js",
+    "build-css": "cat css/app.css > public/css/app.css",
+    "build": "npm run build-js && npm run build-css",
+    "watch-js": "watchify js/app.js -o public/js/index.js -dv",
+    "watch-css": "catw css/app.css -o public/css/app.css -v",
+    "watch": "npm run watch-js & npm run watch-css"
+  }
+}
