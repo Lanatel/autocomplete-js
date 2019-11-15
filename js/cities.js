@@ -1,18 +1,16 @@
 module.exports.getCities = function getCities(value) {
 
-    value = convert(value);
-
     let result = [], i = 0;
 
     do {
-        if (convert(cities[i]).startsWith(value)) result.push(cities[i]);
+        if (convert(cities[i]).startsWith(convert(value))) result.push(cities[i]);
         i++;
     } while (result.length < 5 && cities.length > i);
 
     return result;
 };
 
-function loadCities() {
+const loadCities = () => {
     let xHttp = new XMLHttpRequest();
 
     return new Promise((resolve, reject) => {
@@ -24,37 +22,37 @@ function loadCities() {
         xHttp.open("GET", "cities.json", true);
         xHttp.send();
     });
-}
+};
 
-let cities = (function () {
-    loadCities()
-        .then((jsonStr) => {
-            let parsedJson = JSON.parse(jsonStr),
-                temp = {};
+const getCitiesInProperFormat = jsonString => {
+    let parsedJson = JSON.parse(jsonString),
+        citiesGroupedByWeight = {};
 
-            for (const area in parsedJson) {
-                if (parsedJson.hasOwnProperty(area)) {
-                    for (const cityWeight in parsedJson[area]) {
-                        if (!temp.hasOwnProperty(cityWeight)) temp[cityWeight] = [];
+    for (const area in parsedJson) {
+        for (const cityWeight in parsedJson[area]) {
+            if (!citiesGroupedByWeight.hasOwnProperty(cityWeight)) citiesGroupedByWeight[cityWeight] = [];
 
-                        if (parsedJson[area].hasOwnProperty(cityWeight)) {
-                            parsedJson[area][cityWeight].forEach(function (city) {
-                                temp[cityWeight].push(city + (city !== area ? ', ' + area : ''));
-                            });
-                        }
-                    }
-                }
-            }
+            parsedJson[area][cityWeight]
+                .forEach((city) => citiesGroupedByWeight[cityWeight].push(city + (city !== area ? ', ' + area : '')));
+        }
+    }
 
-            let result = [];
+    let result = [];
 
-            ((Object.keys(temp)).sort().reverse()).forEach(function (cityWeight) {
-                result = result.concat(temp[cityWeight]);
-            });
+    ((Object.keys(citiesGroupedByWeight))
+        .sort()
+        .reverse()
+    ).forEach((cityWeight) => result = result.concat(citiesGroupedByWeight[cityWeight]));
 
-            cities = result;
-        });
-})();
+    return result;
+};
+
+let cities;
+
+loadCities()
+    .then((jsonString) => getCitiesInProperFormat(jsonString))
+    .then(result => cities = result);
+
 
 const transliterate = {
     "q": "й",
@@ -107,11 +105,6 @@ const transliterate = {
     "&": "?"
 };
 
-const ruTransliterate = {
-    "ё": "е",
-    "ъ": "ь"
-};
+const ruTransliterate = {"ё": "е", "ъ": "ь"};
 
-const convert = value => value.toLowerCase().replace(/./g, function (ch) {
-    return transliterate[ch] || ruTransliterate[ch] || ch;
-});
+const convert = value => value.trim().toLowerCase().replace(/./g, (ch) => transliterate[ch] || ruTransliterate[ch] || ch);

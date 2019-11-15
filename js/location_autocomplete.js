@@ -1,14 +1,12 @@
 let locationInputs = document.getElementsByClassName("location-autocomplete");
 
-Array.from(locationInputs).forEach(function (input) {
-    autoComplete(input);
-});
+Array.from(locationInputs).forEach(input => autoComplete(input));
 
 function autoComplete(locationInput) {
 
     let currentFocus, cities;
 
-    locationInput.addEventListener('focus', function () {
+    locationInput.addEventListener('focus', function (e) {
         this.value = '';
         if (!cities) cities = require('./cities');
     });
@@ -27,27 +25,28 @@ function autoComplete(locationInput) {
         list.setAttribute('class', 'autocomplete-items');
         this.parentNode.appendChild(list);
 
-        cities.getCities(value).forEach(function (city) {
+        cities.getCities(value).forEach((city) => {
             let listItem = document.createElement('DIV');
             listItem.setAttribute('data-value', city);
-            listItem.innerHTML = `<strong>${city.substr(0, value.length) }</strong>`;
-            listItem.innerHTML += city.substr(value.length);
+            listItem.innerHTML = `<strong>${city.substr(0, value.length)}</strong>${city.substr(value.length)}`;
 
-            list.appendChild(listItem);
             listItem.addEventListener('click', function (e) {
                 locationInput.value = this.getAttribute('data-value');
-            })
+            });
+
+            list.appendChild(listItem);
         });
 
-        setPosition(list);
+        if (! isFitUnderInput(list)) list.classList.add('autocomplete-top');
+        
     });
 
     locationInput.addEventListener('keydown', function (e) {
-        let resultList = this.parentNode.getElementsByClassName('autocomplete-items');
+        let resultLists = this.parentNode.getElementsByClassName('autocomplete-items');
 
-        if (resultList.length > 0) {
+        if (resultLists.length > 0) {
 
-            let listItems = resultList[0].getElementsByTagName('div');
+            let listItems = resultLists[0].getElementsByTagName('div');
 
             switch (e.code) {
                 case 'ArrowDown':
@@ -55,14 +54,13 @@ function autoComplete(locationInput) {
                     makeElemActive(listItems);
                     break;
                 case 'ArrowUp':
-                    currentFocus --;
+                    currentFocus--;
                     makeElemActive(listItems);
                     break;
                 case 'Enter':
                     e.preventDefault();
 
-                    if (currentFocus > -1)
-                        if (listItems) listItems[currentFocus].click();
+                    if (currentFocus > -1 && listItems) listItems[currentFocus].click();
                     break;
             }
         }
@@ -72,7 +70,7 @@ function autoComplete(locationInput) {
         closeAllLists(e.target);
     });
 
-    function makeElemActive(foundedItems) {
+    const makeElemActive = foundedItems => {
         if (foundedItems.length === 0) return false;
 
         removeActive(foundedItems);
@@ -83,26 +81,16 @@ function autoComplete(locationInput) {
         foundedItems[currentFocus].classList.add('autocomplete-active');
     }
 
-    function removeActive(foundedItems) {
-        Array.from(foundedItems).forEach(function (item) {
-            item.classList.remove('autocomplete-active');
-        });
-    }
+    const removeActive = foundedItems => Array.from(foundedItems).forEach((item) => item.classList.remove('autocomplete-active'));
 
-    function closeAllLists(clickedElem) {
+    const closeAllLists = clickedElem => {
         let autocompleteLists = document.getElementsByClassName('autocomplete-items');
 
-        Array.from(autocompleteLists).forEach(function (list) {
+        Array.from(autocompleteLists).forEach((list) => {
             if (clickedElem !== list)
                 list.parentNode.removeChild(list);
         });
     }
 
-    function setPosition(listBlock) {
-
-        if (window.innerHeight - listBlock.getBoundingClientRect().top < listBlock.offsetHeight) {
-            listBlock.classList.add('autocomplete-top');
-
-        }
-    }
+    const isFitUnderInput = listBlock => (window.innerHeight - listBlock.getBoundingClientRect().top > listBlock.offsetHeight);
 }
