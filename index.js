@@ -17,7 +17,7 @@ let sendFile = function(response, filePath, contentType = 'text/plain') {
 
 let onRequest = function(request, response) {
 
-    if(request.method == "GET") {
+    if(request.method === "GET") {
         switch (request.url) {
             case "/":
                 sendFile(response, './app.html', 'text/html');
@@ -35,7 +35,7 @@ let onRequest = function(request, response) {
     }
 
     send404Error(response);
-}
+};
 
 http.createServer(onRequest).listen(8888, '0.0.0.0' || '127.0.0.1');
 console.log("Server is running now...");

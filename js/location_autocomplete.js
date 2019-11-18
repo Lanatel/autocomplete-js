@@ -1,10 +1,10 @@
-let locationInputs = document.getElementsByClassName("location-autocomplete");
+let locationInputs = document.getElementsByClassName('location-autocomplete');
 
 Array.from(locationInputs).forEach(input => autoComplete(input));
 
 function autoComplete(locationInput) {
 
-    let currentFocus, cities;
+    let currentFocus, cities, scroll;
 
     locationInput.addEventListener('focus', function (e) {
         this.value = '';
@@ -12,14 +12,14 @@ function autoComplete(locationInput) {
     });
 
     locationInput.addEventListener('input', function (e) {
-
-        let list, value = this.value;
+        let list, value = cities.convert(this.value);
 
         closeAllLists();
 
         if (!value) return false;
 
         currentFocus = -1;
+        scroll = 0;
 
         list = document.createElement('DIV');
         list.setAttribute('class', 'autocomplete-items');
@@ -37,7 +37,7 @@ function autoComplete(locationInput) {
             list.appendChild(listItem);
         });
 
-        if (! isFitUnderInput(list)) list.classList.add('autocomplete-top');
+        setCssToPutListInProperPosition(list);
         
     });
 
@@ -45,22 +45,19 @@ function autoComplete(locationInput) {
         let resultLists = this.parentNode.getElementsByClassName('autocomplete-items');
 
         if (resultLists.length > 0) {
-
             let listItems = resultLists[0].getElementsByTagName('div');
 
             switch (e.code) {
                 case 'ArrowDown':
-                    currentFocus++;
-                    makeElemActive(listItems);
+                    onArrowDownHandler(listItems);
                     break;
                 case 'ArrowUp':
-                    currentFocus--;
-                    makeElemActive(listItems);
+                    onArrowUpHandler(listItems);
                     break;
                 case 'Enter':
                     e.preventDefault();
 
-                    if (currentFocus > -1 && listItems) listItems[currentFocus].click();
+                    if (currentFocus >= 0 && listItems) listItems[currentFocus].click();
                     break;
             }
         }
@@ -70,27 +67,73 @@ function autoComplete(locationInput) {
         closeAllLists(e.target);
     });
 
-    const makeElemActive = foundedItems => {
-        if (foundedItems.length === 0) return false;
+    const onArrowUpHandler = foundItems => {
+        if (foundItems.length === 0) return false;
 
-        removeActive(foundedItems);
+        if (currentFocus > 0) {
+            removeActive(foundItems);
 
-        if (currentFocus >= foundedItems.length) currentFocus = 0;
-        if (currentFocus < 0) currentFocus = foundedItems.length - 1;
+            if (currentFocus > 1) {
+                if (currentFocus !== foundItems.length - 1) scroll -= foundItems[currentFocus].clientHeight;
+                foundItems[0].parentNode.scrollTop = scroll;
+            }
+            currentFocus--;
+            foundItems[currentFocus].classList.add('autocomplete-active');
+        }
+    };
 
-        foundedItems[currentFocus].classList.add('autocomplete-active');
-    }
+    const onArrowDownHandler = foundItems => {
+        if (foundItems.length === 0) return false;
 
-    const removeActive = foundedItems => Array.from(foundedItems).forEach((item) => item.classList.remove('autocomplete-active'));
+        if (currentFocus < foundItems.length - 1) {
+            removeActive(foundItems);
 
-    const closeAllLists = clickedElem => {
+            currentFocus++;
+            foundItems[currentFocus].classList.add('autocomplete-active');
+
+            if (currentFocus > 1) {
+                if (currentFocus !== foundItems.length - 1) scroll += foundItems[currentFocus].clientHeight;
+                foundItems[0].parentNode.scrollTop = scroll;
+            }
+        }
+    };
+
+    const removeActive = foundItems => {
+        return Array.from(foundItems)
+            .forEach((item) => item.classList.remove('autocomplete-active'));
+    };
+
+    const closeAllLists = clickedElement => {
         let autocompleteLists = document.getElementsByClassName('autocomplete-items');
 
         Array.from(autocompleteLists).forEach((list) => {
-            if (clickedElem !== list)
+            if (clickedElement !== list)
                 list.parentNode.removeChild(list);
         });
-    }
+    };
 
-    const isFitUnderInput = listBlock => (window.innerHeight - listBlock.getBoundingClientRect().top > listBlock.offsetHeight);
+    const setCssToPutListInProperPosition = listBlock => {
+        let heightUnderInput = window.innerHeight - listBlock.getBoundingClientRect().top,
+            heightOverInput = listBlock.getBoundingClientRect().top,
+            listBlockHeight = listBlock.offsetHeight,
+            availableHeight;
+
+        if (!(heightUnderInput > listBlockHeight) && !(heightUnderInput > heightOverInput)) {
+            listBlock.classList.add('autocomplete-top');
+            availableHeight = heightOverInput;
+        } else {
+            availableHeight = heightUnderInput;
+        }
+
+        let listBlockChildren = listBlock.childNodes;
+
+        availableHeight -= 15;
+
+        if (availableHeight < listBlockHeight && listBlockChildren.length > 3) {
+            let listBlockChildHeight = listBlockChildren[0].offsetHeight;
+
+            listBlock.style.height = listBlockChildHeight * Math.max(3, Math.floor(availableHeight / listBlockChildHeight)) + 'px';
+            listBlock.style.overflowY = 'scroll';
+        }
+    }
 }

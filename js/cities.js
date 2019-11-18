@@ -1,9 +1,11 @@
-module.exports.getCities = function getCities(value) {
+const getCities = value => {
 
     let result = [], i = 0;
 
+    value = convert(value);
+
     do {
-        if (convert(cities[i]).startsWith(convert(value))) result.push(cities[i]);
+        if (convert(cities[i]).startsWith(value)) result.push(cities[i]);
         i++;
     } while (result.length < 5 && cities.length > i);
 
@@ -40,8 +42,8 @@ const getCitiesInProperFormat = jsonString => {
     let result = [];
 
     ((Object.keys(citiesGroupedByWeight))
-        .sort()
-        .reverse()
+            .sort()
+            .reverse()
     ).forEach((cityWeight) => result = result.concat(citiesGroupedByWeight[cityWeight]));
 
     return result;
@@ -52,7 +54,6 @@ let cities;
 loadCities()
     .then((jsonString) => getCitiesInProperFormat(jsonString))
     .then(result => cities = result);
-
 
 const transliterate = {
     "q": "й",
@@ -105,6 +106,17 @@ const transliterate = {
     "&": "?"
 };
 
-const ruTransliterate = {"ё": "е", "ъ": "ь"};
+const ruTransliterate = {"ё": "е", "ъ": "ь", "-": " ", "—" : ""};
 
-const convert = value => value.trim().toLowerCase().replace(/./g, (ch) => transliterate[ch] || ruTransliterate[ch] || ch);
+const convert = value => {
+    return value
+        .trim()
+        .toLowerCase()
+        .replace(/ +/g, ' ')
+        .replace(/./g, (ch) => transliterate[ch] || ruTransliterate[ch] || ch);
+};
+
+module.exports = {
+    getCities,
+    convert
+};

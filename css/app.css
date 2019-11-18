@@ -2,7 +2,7 @@
     box-sizing: border-box;
 }
 
-body {
+html, body {
     font: 16px Arial;
 }
 
@@ -39,6 +39,7 @@ input[type=submit] {
     /*position the autocomplete items to be the same width as the container:*/
     left: 0;
     right: 0;
+    max-height: 275px;
 }
 
 .autocomplete-top {
@@ -50,6 +51,7 @@ input[type=submit] {
     cursor: pointer;
     background-color: #fff;
     border-bottom: 1px solid #d4d4d4;
+    height: 55px;
 }
 
 /*when hovering an item:*/
