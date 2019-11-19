@@ -1,4 +1,6 @@
-const getCities = value => {
+let locale;
+
+const getCities = (value) => {
 
     let result = [], i = 0;
 
@@ -21,7 +23,7 @@ const loadCities = () => {
                 resolve(this.responseText);
             }
         };
-        xHttp.open("GET", "cities.json", true);
+        xHttp.open("GET", `${locale}/cities.json`, true);
         xHttp.send();
     });
 };
@@ -51,72 +53,127 @@ const getCitiesInProperFormat = jsonString => {
 
 let cities;
 
-loadCities()
-    .then((jsonString) => getCitiesInProperFormat(jsonString))
-    .then(result => cities = result);
-
-const transliterate = {
-    "q": "й",
-    "w": "ц",
-    "e": "у",
-    "r": "к",
-    "t": "е",
-    "y": "н",
-    "u": "г",
-    "i": "ш",
-    "o": "щ",
-    "p": "з",
-    "[": "х",
-    "{": "Х",
-    "]": "ъ",
-    "}": "Ъ",
-    "|": "/",
-    "`": "ё",
-    "~": "Ё",
-    "a": "ф",
-    "s": "ы",
-    "d": "в",
-    "f": "а",
-    "g": "п",
-    "h": "р",
-    "j": "о",
-    "k": "л",
-    "l": "д",
-    ";": "ж",
-    ":": "Ж",
-    "'": "э",
-    "\"": "Э",
-    "z": "я",
-    "x": "ч",
-    "c": "с",
-    "v": "м",
-    "b": "и",
-    "n": "т",
-    "m": "ь",
-    ",": "б",
-    "<": "Б",
-    ".": "ю",
-    ">": "Ю",
-    "/": ".",
-    "?": ",",
-    "@": "\"",
-    "#": "№",
-    "$": ";",
-    "^": ":",
-    "&": "?"
+const localeTransliterate = {
+    'ru_RU': {
+        "q": "й",
+        "w": "ц",
+        "e": "у",
+        "r": "к",
+        "t": "е",
+        "y": "н",
+        "u": "г",
+        "i": "ш",
+        "o": "щ",
+        "p": "з",
+        "[": "х",
+        "{": "Х",
+        "]": "ь",
+        "}": "ь",
+        "|": "/",
+        "`": "е",
+        "~": "е",
+        "a": "ф",
+        "s": "ы",
+        "d": "в",
+        "f": "а",
+        "g": "п",
+        "h": "р",
+        "j": "о",
+        "k": "л",
+        "l": "д",
+        ";": "ж",
+        ":": "Ж",
+        "'": "э",
+        "\"": "Э",
+        "z": "я",
+        "x": "ч",
+        "c": "с",
+        "v": "м",
+        "b": "и",
+        "n": "т",
+        "m": "ь",
+        ",": "б",
+        "<": "Б",
+        ".": "ю",
+        ">": "Ю",
+        "/": ".",
+        "?": ",",
+        "@": "\"",
+        "#": "№",
+        "$": ";",
+        "^": ":",
+        "&": "?",
+        "ё": "е",
+        "ъ": "ь",
+    },
+    'uk_UK': {
+        "q": "й",
+        "w": "ц",
+        "e": "у",
+        "r": "к",
+        "t": "е",
+        "y": "н",
+        "u": "г",
+        "i": "ш",
+        "o": "щ",
+        "p": "з",
+        "[": "х",
+        "{": "Х",
+        "]": "ї",
+        "}": "Ї",
+        "|": "/",
+        "`": "ё",
+        "~": "Ё",
+        "a": "ф",
+        "s": "і",
+        "d": "в",
+        "f": "а",
+        "g": "п",
+        "h": "р",
+        "j": "о",
+        "k": "л",
+        "l": "д",
+        ";": "ж",
+        ":": "Ж",
+        "'": "є",
+        "\"": "Є",
+        "z": "я",
+        "x": "ч",
+        "c": "с",
+        "v": "м",
+        "b": "и",
+        "n": "т",
+        "m": "ь",
+        ",": "б",
+        "<": "Б",
+        ".": "ю",
+        ">": "Ю",
+        "/": ".",
+        "?": ",",
+        "@": "\"",
+        "#": "№",
+        "$": ";",
+        "^": ":",
+        "&": "?"
+    },
 };
 
-const ruTransliterate = {"ё": "е", "ъ": "ь", "-": " ", "—" : ""};
+const symbolsTransliterate = {"-": " ", "—" : " "};
 
-const convert = value => {
+const convert = (value) => {
     return value
         .trim()
         .toLowerCase()
         .replace(/ +/g, ' ')
-        .replace(/./g, (ch) => transliterate[ch] || ruTransliterate[ch] || ch);
+        .replace(/./g, (ch) => localeTransliterate[localeTransliterate.hasOwnProperty(locale) ? locale : defaultLocale][ch] || symbolsTransliterate[ch] || ch);
 };
 
-module.exports = {
-    getCities,
-    convert
+module.exports = (passedlocale = 'ru_RU') => {
+    locale = passedlocale;
+
+    loadCities()
+        .then((jsonString) => getCitiesInProperFormat(jsonString))
+        .then(result => cities = result);
+
+    return {getCities, convert}
 };

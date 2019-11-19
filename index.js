@@ -28,8 +28,8 @@ let onRequest = function(request, response) {
             case "/public/css/app.css":
                 sendFile(response, './public/css/app.css', 'text/css');
                 return;
-            case "/cities.json":
-                sendFile(response, './src/cities.json', 'text/json');
+            case `/${(process.env.LOCALE || 'ru_RU')}/cities.json`:
+                sendFile(response, `./src/${(process.env.LOCALE || 'ru_RU')}_cities.json`, 'text/json');
                 return;
         }
     }

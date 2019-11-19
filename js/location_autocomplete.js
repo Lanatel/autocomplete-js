@@ -1,14 +1,14 @@
-let locationInputs = document.getElementsByClassName('location-autocomplete');
+module.exports = {
+    autoComplete
+};
 
-Array.from(locationInputs).forEach(input => autoComplete(input));
-
-function autoComplete(locationInput) {
+function autoComplete(locationInput, {location = 'ru_RU'} = {}) {
 
     let currentFocus, cities, scroll;
 
     locationInput.addEventListener('focus', function (e) {
         this.value = '';
-        if (!cities) cities = require('./cities');
+        if (!cities) cities = require('./cities')(location);
     });
 
     locationInput.addEventListener('input', function (e) {
@@ -38,7 +38,6 @@ function autoComplete(locationInput) {
         });
 
         setCssToPutListInProperPosition(list);
-        
     });
 
     locationInput.addEventListener('keydown', function (e) {
