@@ -2,7 +2,7 @@
   "private": true,
   "dependencies": {
     "browserify": "^16.5.0",
-    "terser": "^4.4.0"
+    "terser": "^4.8.1"
   },
   "devDependencies": {
     "catw": "^1.0.1",
